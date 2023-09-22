@@ -1,4 +1,49 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { WalletType } from '@prisma/client';
+import { WalletService } from 'src/wallet/wallet.service';
 
 @Injectable()
-export class UserService {}
+export class UserService {
+    constructor(
+        private walletService: WalletService,
+    ) {}
+
+    async getUserWallet(userId: number) {
+        // get user wallet
+        const userWallet = await this.walletService.fetchWallet(userId)
+        if(userWallet == null) {
+            throw new NotFoundException;
+        }
+        // check user
+        if(userWallet.type != WalletType.user) {
+            throw new BadRequestException;
+        }
+        return userWallet;
+    }
+
+    async reduceUserCredits(userId: number, credits: number) {
+
+        // fetch user wallet
+        let userWallet = await this.getUserWallet(userId);
+
+        // check credits
+        if(userWallet.credits < credits) {
+            throw new BadRequestException;
+        }
+        // update user wallet
+        userWallet = await this.walletService.updateWalletCredits(userId, userWallet.credits - credits);
+
+        return userWallet;
+    }
+
+    async addCreditsToUser(userId: number, credits: number) {
+
+        // fetch user wallet
+        let userWallet = await this.getUserWallet(userId);
+
+        // update user wallet
+        userWallet = await this.walletService.updateWalletCredits(userId, userWallet.credits + credits);
+
+        return userWallet;
+    }
+}

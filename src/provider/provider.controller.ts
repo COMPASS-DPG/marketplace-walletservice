@@ -1,4 +1,24 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { TransactionService } from 'src/transactions/transactions.service';
+import { ProviderService } from './provider.service';
 
-@Controller('provider')
-export class ProviderController {}
+@Controller('providers')
+export class ProviderController {
+    constructor(
+        private transactionService: TransactionService,
+        private providerService: ProviderService
+    ) {}
+
+    @Get("/:providerId/transactions")
+    // get all transactions of a particular provider
+    async getProviderTransactions(
+        @Param("providerId", ParseIntPipe) providerId: number,
+    ) {
+        // check provider
+        await this.providerService.getProviderWallet(providerId);
+
+        // fetch transactions
+        const transactions = await this.transactionService.fetchTransactionsOfOneSystemActor(providerId);
+        return transactions;
+    }
+}
