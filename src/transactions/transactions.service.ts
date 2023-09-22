@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionType, WalletType } from '@prisma/client';
-import { prisma } from 'src/main';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TransactionService {
+    constructor(
+        private prisma: PrismaService,
+    ) {}
 
     fetchAllUsersTransactions() {
-        return prisma.transactions.findMany({
+        return this.prisma.transactions.findMany({
             where: {
                 OR: [{
                     from: {
@@ -22,7 +25,7 @@ export class TransactionService {
     }
 
     fetchTransactionsOfOneSystemActor(userId: number) {
-        return prisma.transactions.findMany({
+        return this.prisma.transactions.findMany({
             where: {
                 OR: [{
                     from: {
@@ -38,7 +41,7 @@ export class TransactionService {
     }
 
     fetchAllAdminProviderTransactions() {
-        return prisma.transactions.findMany({
+        return this.prisma.transactions.findMany({
             where: {
                 from: {
                     type: WalletType.provider
@@ -52,7 +55,7 @@ export class TransactionService {
     }
 
     createTransaction(credits: number, fromWalletId: number, toWalletId: number, transactionType: TransactionType, description?: string) {
-        return prisma.transactions.create({
+        return this.prisma.transactions.create({
             data: {
                 credits: credits,
                 type: transactionType,

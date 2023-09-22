@@ -5,8 +5,10 @@ import { TransactionService } from 'src/transactions/transactions.service';
 import { WalletService } from 'src/wallet/wallet.service';
 import { UserService } from 'src/user/user.service';
 import { ProviderService } from 'src/provider/provider.service';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [AdminController],
   providers: [AdminService, TransactionService, WalletService, UserService, ProviderService]
 })

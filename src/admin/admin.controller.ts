@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { TransactionService } from 'src/transactions/transactions.service';
 import { UserService } from 'src/user/user.service';
 import { TransactionType, WalletType } from '@prisma/client';
 import { ProviderService } from 'src/provider/provider.service';
+import { CreditsDto } from './dto/credits.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -24,7 +25,13 @@ export class AdminController {
         
         // fetch transactions
         const transactions = await this.transactionService.fetchAllUsersTransactions();
-        return transactions;
+        return {
+            statusCode: HttpStatus.OK,
+            message: "transactions fetched successfully",
+            body: {
+                transactions
+            }
+        }
     }
 
     @Get("/:adminId/transactions/users/:userId")
@@ -41,7 +48,13 @@ export class AdminController {
         
         // fetch transactions
         const transactions = await this.transactionService.fetchTransactionsOfOneSystemActor(userId);
-        return transactions;
+        return {
+            statusCode: HttpStatus.OK,
+            message: "transactions fetched successfully",
+            body: {
+                transactions
+            }
+        }
     }
 
     @Get("/:adminId/transactions/providers")
@@ -54,7 +67,13 @@ export class AdminController {
         
         // fetch transactions
         const transactions = await this.transactionService.fetchAllAdminProviderTransactions();
-        return transactions;
+        return {
+            statusCode: HttpStatus.OK,
+            message: "transactions fetched successfully",
+            body: {
+                transactions
+            }
+        }
     }
 
     @Get("/:adminId/transactions/providers/:providerId")
@@ -71,42 +90,60 @@ export class AdminController {
         
         // fetch transactions
         const transactions = await this.transactionService.fetchTransactionsOfOneSystemActor(providerId);
-        return transactions;
+        return {
+            statusCode: HttpStatus.OK,
+            message: "transactions fetched successfully",
+            body: {
+                transactions
+            }
+        }
     }
 
     @Post("/:adminId/add-credits")
     // add credits to a user's wallet
     async addCredits(
         @Param("adminId", ParseIntPipe) adminId: number,
-        @Body("userId") userId: number,
-        @Body("credits") credits: number
+        @Body() creditsDto: CreditsDto
     ) { 
         // check admin
         const adminWallet = await this.adminService.getAdminWallet(adminId);
 
         // update wallet
-        const userWallet = await this.userService.addCreditsToUser(userId, credits);
-
+        const userWallet = await this.userService.addCreditsToUser(creditsDto.userId, creditsDto.credits);
+        
         // create transaction
-        await this.transactionService.createTransaction(credits, adminWallet.walletId, userWallet.walletId, TransactionType.creditRequest);
-        return userWallet.credits;
+        await this.transactionService.createTransaction(creditsDto.credits, adminWallet.walletId, userWallet.walletId, TransactionType.creditRequest);
+
+        return {
+            statusCode: HttpStatus.OK,
+            message: "Credits added successfully",
+            body: {
+                credits: userWallet.credits
+            }
+        }
     }
 
     @Post("/:adminId/reduce-credits")
     // reduce credits from a user's wallet
     async reduceCredits(
         @Param("adminId", ParseIntPipe) adminId: number,
-        @Body("userId") userId: number,
-        @Body("credits") credits: number
+        @Body() creditsDto: CreditsDto
     ) {
         // check admin
         const adminWallet = await this.adminService.getAdminWallet(adminId);
 
         // update wallet
-        const userWallet = await this.userService.reduceUserCredits(userId, credits);
+        const userWallet = await this.userService.reduceUserCredits(creditsDto.userId, creditsDto.credits);
 
         // create transaction
-        await this.transactionService.createTransaction(credits, userWallet.walletId, adminWallet.walletId, TransactionType.creditRequest);
-        return userWallet.credits;
+        await this.transactionService.createTransaction(creditsDto.credits, userWallet.walletId, adminWallet.walletId, TransactionType.creditRequest);
+        
+        return {
+            statusCode: HttpStatus.OK,
+            message: "Credits reduced successfully",
+            body: {
+                credits: userWallet.credits
+            }
+        }
     }
 }

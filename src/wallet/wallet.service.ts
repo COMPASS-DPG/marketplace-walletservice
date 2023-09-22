@@ -1,11 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from 'src/main';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class WalletService {
+    constructor(
+        private prisma: PrismaService,
+    ) {}
 
     fetchWallet(userId: number) {
-        return prisma.wallets.findUnique({
+        return this.prisma.wallets.findUnique({
             where: {
                 userId: userId
             }
@@ -13,7 +16,7 @@ export class WalletService {
     }
 
     updateWalletCredits(userId: number, newCreditsAmount: number) {
-        return prisma.wallets.update({
+        return this.prisma.wallets.update({
             where: {
                 userId: userId
             },

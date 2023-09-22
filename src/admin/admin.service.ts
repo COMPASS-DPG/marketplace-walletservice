@@ -1,6 +1,5 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { WalletType } from '@prisma/client';
-import { prisma } from 'src/main';
 import { WalletService } from 'src/wallet/wallet.service';
 
 @Injectable()
@@ -13,12 +12,12 @@ export class AdminService {
         // get admin wallet
         const adminWallet = await this.walletService.fetchWallet(adminId);
         if(adminWallet == null) {
-            throw new NotFoundException;
+            throw new HttpException("Wallet does not exist", HttpStatus.NOT_FOUND);
         }
 
         // check admin
         if(adminWallet.type != WalletType.admin) {
-            throw new UnauthorizedException;
+            throw new HttpException("Wallet does not belong to admin", HttpStatus.BAD_REQUEST);
         }
         return adminWallet;
     }

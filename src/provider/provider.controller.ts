@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Param, ParseIntPipe } from '@nestjs/common';
 import { TransactionService } from 'src/transactions/transactions.service';
 import { ProviderService } from './provider.service';
 
@@ -19,6 +19,12 @@ export class ProviderController {
 
         // fetch transactions
         const transactions = await this.transactionService.fetchTransactionsOfOneSystemActor(providerId);
-        return transactions;
+        return {
+            statusCode: HttpStatus.OK,
+            message: "transactions fetched successfully",
+            body: {
+                transactions
+            }
+        }
     }
 }

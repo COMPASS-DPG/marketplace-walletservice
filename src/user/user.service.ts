@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { WalletType } from '@prisma/client';
 import { WalletService } from 'src/wallet/wallet.service';
 
@@ -12,11 +12,11 @@ export class UserService {
         // get user wallet
         const userWallet = await this.walletService.fetchWallet(userId)
         if(userWallet == null) {
-            throw new NotFoundException;
+            throw new HttpException("Wallet does not exist", HttpStatus.NOT_FOUND);
         }
         // check user
         if(userWallet.type != WalletType.user) {
-            throw new BadRequestException;
+            throw new HttpException("Wallet does not belong to a user", HttpStatus.BAD_REQUEST);
         }
         return userWallet;
     }
@@ -28,7 +28,7 @@ export class UserService {
 
         // check credits
         if(userWallet.credits < credits) {
-            throw new BadRequestException;
+            throw new HttpException("Not enough credits", HttpStatus.BAD_REQUEST);
         }
         // update user wallet
         userWallet = await this.walletService.updateWalletCredits(userId, userWallet.credits - credits);
