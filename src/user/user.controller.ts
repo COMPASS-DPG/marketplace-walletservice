@@ -4,7 +4,11 @@ import { TransactionService } from 'src/transactions/transactions.service';
 import { UserService } from './user.service';
 import { ProviderService } from 'src/provider/provider.service';
 import { PurchaseDto } from './dto/purchase.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { WalletCredits } from 'src/wallet/dto/wallet.dto';
+import { Transaction } from 'src/transactions/dto/transactions.dto';
 
+@ApiTags('users')
 @Controller('users')
 export class UserController {
     constructor(
@@ -13,6 +17,8 @@ export class UserController {
         private providerService: ProviderService
     ) {}
 
+    @ApiOperation({ summary: 'Get User Credits' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Credits fetched successfully', type: WalletCredits })
     @Get("/:userId/credits")
     // get credits of a particular user
     async getCredits(
@@ -30,6 +36,8 @@ export class UserController {
         }
     }
 
+    @ApiOperation({ summary: 'Get User Transactions' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'transactions fetched successfully', type: [Transaction] })
     @Get("/:userId/transactions")
     // get all transactions of a particular user
     async getUserTransactions(
@@ -49,6 +57,8 @@ export class UserController {
         }
     }
 
+    @ApiOperation({ summary: 'Handle Purchase' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'transactions fetched successfully', type: Transaction })
     @Post("/:userId/purchase")
     // decrease credits from a user's wallet due to purchase
     async handlePurchase(
@@ -70,7 +80,7 @@ export class UserController {
             statusCode: HttpStatus.OK,
             message: "purchase successful",
             body: {
-                transactionId: transaction.transactionId
+                transaction
             }
         }
     }

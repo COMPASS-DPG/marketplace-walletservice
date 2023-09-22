@@ -2,10 +2,15 @@ import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post } from '@n
 import { AdminService } from './admin.service';
 import { TransactionService } from 'src/transactions/transactions.service';
 import { UserService } from 'src/user/user.service';
-import { TransactionType, WalletType } from '@prisma/client';
+import { TransactionType } from '@prisma/client';
 import { ProviderService } from 'src/provider/provider.service';
 import { CreditsDto } from './dto/credits.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Transaction } from 'src/transactions/dto/transactions.dto';
+import { WalletCredits } from 'src/wallet/dto/wallet.dto';
 
+
+@ApiTags('admin')
 @Controller('admin')
 export class AdminController {
     constructor(
@@ -15,6 +20,8 @@ export class AdminController {
         private providerService: ProviderService
     ) {}
 
+    @ApiOperation({ summary: 'Get All Users Transactions' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'transactions fetched successfully', type: [Transaction] })
     @Get("/:adminId/transactions/users")
     // get all transactions of all users
     async getAllUsersTransactions(
@@ -34,6 +41,8 @@ export class AdminController {
         }
     }
 
+    @ApiOperation({ summary: 'Get One User Transactions' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'transactions fetched successfully', type: [Transaction] })
     @Get("/:adminId/transactions/users/:userId")
     // get all transactions of a particular user
     async getUserTransactions(
@@ -57,6 +66,8 @@ export class AdminController {
         }
     }
 
+    @ApiOperation({ summary: 'Get All Admin Providers Transactions' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'transactions fetched successfully', type: [Transaction] })
     @Get("/:adminId/transactions/providers")
     // get all transactions between all providers and admins
     async getAllAdminProvidersTransactions(
@@ -76,6 +87,8 @@ export class AdminController {
         }
     }
 
+    @ApiOperation({ summary: 'Get One Provider Transactions' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'transactions fetched successfully', type: [Transaction] })
     @Get("/:adminId/transactions/providers/:providerId")
     // get all transactions of a particular provider
     async getProviderTransactions(
@@ -99,6 +112,8 @@ export class AdminController {
         }
     }
 
+    @ApiOperation({ summary: 'Add Credits' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Credits added successfully', type: WalletCredits })
     @Post("/:adminId/add-credits")
     // add credits to a user's wallet
     async addCredits(
@@ -123,6 +138,8 @@ export class AdminController {
         }
     }
 
+    @ApiOperation({ summary: 'Reduce Credits' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Credits added successfully', type: WalletCredits })
     @Post("/:adminId/reduce-credits")
     // reduce credits from a user's wallet
     async reduceCredits(
