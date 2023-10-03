@@ -13,7 +13,7 @@ datasource db {
 enum WalletType {
   admin
   provider
-  user
+  enduser
 }
 
 enum WalletStatus {

@@ -1,10 +1,10 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post, Res } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { TransactionService } from 'src/transactions/transactions.service';
-import { UserService } from 'src/user/user.service';
+import { EnduserService } from 'src/enduser/enduser.service';
 import { TransactionType } from '@prisma/client';
 import { ProviderService } from 'src/provider/provider.service';
-import { CreditsDto } from './dto/credits.dto';
+import { CreditsDto } from '../dto/credits.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Transaction } from 'src/transactions/dto/transactions.dto';
 import { WalletCredits } from 'src/wallet/dto/wallet.dto';
@@ -15,55 +15,56 @@ import { WalletCredits } from 'src/wallet/dto/wallet.dto';
 export class AdminController {
     constructor(
         private transactionService: TransactionService,
-        private userService: UserService,
+        private enduserService: EnduserService,
         private adminService: AdminService,
         private providerService: ProviderService
     ) {}
 
-    @ApiOperation({ summary: 'Get All Users Transactions' })
+    @ApiOperation({ summary: 'Get All Endusers Transactions' })
     @ApiResponse({ status: HttpStatus.OK, description: 'transactions fetched successfully', type: [Transaction] })
-    @Get("/:adminId/transactions/users")
-    // get all transactions of all users
-    async getAllUsersTransactions(
-        @Param("adminId", ParseIntPipe) adminId: number
+    @Get("/:adminId/transactions/endusers")
+    // get all transactions of all endusers
+    async getAllEndusersTransactions(
+        @Param("adminId", ParseIntPipe) adminId: number,
+        @Res() res
     ) {
         // check admin
         await this.adminService.getAdminWallet(adminId);
         
         // fetch transactions
-        const transactions = await this.transactionService.fetchAllUsersTransactions();
-        return {
-            statusCode: HttpStatus.OK,
+        const transactions = await this.transactionService.fetchAllEndusersTransactions();
+
+        return res.status(HttpStatus.OK).json({
             message: "transactions fetched successfully",
-            body: {
+            data: {
                 transactions
             }
-        }
+        })
     }
 
-    @ApiOperation({ summary: 'Get One User Transactions' })
+    @ApiOperation({ summary: 'Get One Enduser Transactions' })
     @ApiResponse({ status: HttpStatus.OK, description: 'transactions fetched successfully', type: [Transaction] })
-    @Get("/:adminId/transactions/users/:userId")
-    // get all transactions of a particular user
-    async getUserTransactions(
+    @Get("/:adminId/transactions/endusers/:enduserId")
+    // get all transactions of a particular enduser
+    async getEnduserTransactions(
         @Param("adminId", ParseIntPipe) adminId: number,
-        @Param("userId", ParseIntPipe) userId: number
+        @Param("enduserId", ParseIntPipe) enduserId: number,
+        @Res() res
     ) {
         // check admin
         await this.adminService.getAdminWallet(adminId);
 
-        // check user
-        await this.userService.getUserWallet(userId);
+        // check enduser
+        await this.enduserService.getEnduserWallet(enduserId);
         
         // fetch transactions
-        const transactions = await this.transactionService.fetchTransactionsOfOneSystemActor(userId);
-        return {
-            statusCode: HttpStatus.OK,
+        const transactions = await this.transactionService.fetchTransactionsOfOneUser(enduserId);
+        return res.status(HttpStatus.OK).json({
             message: "transactions fetched successfully",
-            body: {
+            data: {
                 transactions
             }
-        }
+        })
     }
 
     @ApiOperation({ summary: 'Get All Admin Providers Transactions' })
@@ -71,20 +72,20 @@ export class AdminController {
     @Get("/:adminId/transactions/providers")
     // get all transactions between all providers and admins
     async getAllAdminProvidersTransactions(
-        @Param("adminId", ParseIntPipe) adminId: number
+        @Param("adminId", ParseIntPipe) adminId: number,
+        @Res() res
     ) {
         // check admin
         await this.adminService.getAdminWallet(adminId);
         
         // fetch transactions
         const transactions = await this.transactionService.fetchAllAdminProviderTransactions();
-        return {
-            statusCode: HttpStatus.OK,
+        return res.status(HttpStatus.OK).json({
             message: "transactions fetched successfully",
-            body: {
+            data: {
                 transactions
             }
-        }
+        })
     }
 
     @ApiOperation({ summary: 'Get One Provider Transactions' })
@@ -93,7 +94,8 @@ export class AdminController {
     // get all transactions of a particular provider
     async getProviderTransactions(
         @Param("adminId", ParseIntPipe) adminId: number,
-        @Param("providerId", ParseIntPipe) providerId: number
+        @Param("providerId", ParseIntPipe) providerId: number,
+        @Res() res
     ) {
         // check admin
         await this.adminService.getAdminWallet(adminId);
@@ -102,65 +104,64 @@ export class AdminController {
         await this.providerService.getProviderWallet(providerId);
         
         // fetch transactions
-        const transactions = await this.transactionService.fetchTransactionsOfOneSystemActor(providerId);
-        return {
-            statusCode: HttpStatus.OK,
+        const transactions = await this.transactionService.fetchTransactionsOfOneUser(providerId);
+        return res.status(HttpStatus.OK).json({
             message: "transactions fetched successfully",
-            body: {
+            data: {
                 transactions
             }
-        }
+        })
     }
 
     @ApiOperation({ summary: 'Add Credits' })
     @ApiResponse({ status: HttpStatus.OK, description: 'Credits added successfully', type: WalletCredits })
     @Post("/:adminId/add-credits")
-    // add credits to a user's wallet
+    // add credits to a enduser's wallet
     async addCredits(
         @Param("adminId", ParseIntPipe) adminId: number,
-        @Body() creditsDto: CreditsDto
+        @Body() creditsDto: CreditsDto,
+        @Res() res
     ) { 
         // check admin
         const adminWallet = await this.adminService.getAdminWallet(adminId);
 
         // update wallet
-        const userWallet = await this.userService.addCreditsToUser(creditsDto.userId, creditsDto.credits);
+        const enduserWallet = await this.enduserService.addCreditsToEnduser(creditsDto.enduserId, creditsDto.credits);
         
         // create transaction
-        await this.transactionService.createTransaction(creditsDto.credits, adminWallet.walletId, userWallet.walletId, TransactionType.creditRequest);
+        await this.transactionService.createTransaction(creditsDto.credits, adminWallet.walletId, enduserWallet.walletId, TransactionType.creditRequest);
 
-        return {
-            statusCode: HttpStatus.OK,
+        return res.status(HttpStatus.OK).json({
             message: "Credits added successfully",
-            body: {
-                credits: userWallet.credits
+            data: {
+                credits: enduserWallet.credits
             }
-        }
+        })
     }
 
     @ApiOperation({ summary: 'Reduce Credits' })
     @ApiResponse({ status: HttpStatus.OK, description: 'Credits added successfully', type: WalletCredits })
     @Post("/:adminId/reduce-credits")
-    // reduce credits from a user's wallet
+    // reduce credits from a enduser's wallet
     async reduceCredits(
         @Param("adminId", ParseIntPipe) adminId: number,
-        @Body() creditsDto: CreditsDto
+        @Body() creditsDto: CreditsDto,
+        @Res() res
     ) {
         // check admin
         const adminWallet = await this.adminService.getAdminWallet(adminId);
 
         // update wallet
-        const userWallet = await this.userService.reduceUserCredits(creditsDto.userId, creditsDto.credits);
+        const enduserWallet = await this.enduserService.reduceEnduserCredits(creditsDto.enduserId, creditsDto.credits);
 
         // create transaction
-        await this.transactionService.createTransaction(creditsDto.credits, userWallet.walletId, adminWallet.walletId, TransactionType.creditRequest);
+        await this.transactionService.createTransaction(creditsDto.credits, enduserWallet.walletId, adminWallet.walletId, TransactionType.creditRequest);
         
-        return {
-            statusCode: HttpStatus.OK,
+        return res.status(HttpStatus.OK).json({
             message: "Credits reduced successfully",
-            body: {
-                credits: userWallet.credits
+            data: {
+                credits: enduserWallet.credits
             }
-        }
+        })
     }
 }

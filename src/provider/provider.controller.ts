@@ -1,15 +1,19 @@
-import { Controller, Get, HttpStatus, Param, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post, Res } from '@nestjs/common';
 import { TransactionService } from 'src/transactions/transactions.service';
 import { ProviderService } from './provider.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Transaction } from 'src/transactions/dto/transactions.dto';
+import { SettlementDto } from 'src/dto/credits.dto';
+import { AdminService } from 'src/admin/admin.service';
+import { TransactionType } from '@prisma/client';
 
 @ApiTags('providers')
 @Controller('providers')
 export class ProviderController {
     constructor(
         private transactionService: TransactionService,
-        private providerService: ProviderService
+        private providerService: ProviderService,
+        private adminService: AdminService
     ) {}
     
     @ApiOperation({ summary: 'Get Provider Transactions' })
@@ -18,18 +22,46 @@ export class ProviderController {
     // get all transactions of a particular provider
     async getProviderTransactions(
         @Param("providerId", ParseIntPipe) providerId: number,
+        @Res() res
     ) {
         // check provider
         await this.providerService.getProviderWallet(providerId);
 
         // fetch transactions
-        const transactions = await this.transactionService.fetchTransactionsOfOneSystemActor(providerId);
-        return {
-            statusCode: HttpStatus.OK,
+        const transactions = await this.transactionService.fetchTransactionsOfOneUser(providerId);
+        return res.status(HttpStatus.OK).json({
             message: "transactions fetched successfully",
-            body: {
+            data: {
                 transactions
             }
-        }
+        })
+    }
+
+    @ApiOperation({ summary: 'Transfer settlement credits and record transaction' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'credits transferred successfully', type: Transaction })
+    @Post("/:providerId/settlement-transaction")
+    // Transfer credits from provider wallet to admin wallet 
+    async settleProviderWallet(
+        @Param("providerId", ParseIntPipe) providerId: number,
+        @Body() settlementDto: SettlementDto,
+        @Res() res
+    ) {
+        // update provider wallet
+        const providerWalletPromise = this.providerService.reduceProviderCredits(providerId, settlementDto.credits);
+
+        // update admin wallet
+        const adminWalletPromise = this.adminService.addCreditsToAdmin(settlementDto.adminId, settlementDto.credits);
+
+        const [providerWallet, adminWallet] = await Promise.all([providerWalletPromise, adminWalletPromise]);
+
+        // create transaction
+        const transaction = await this.transactionService.createTransaction(settlementDto.credits, providerWallet.walletId, adminWallet.walletId, TransactionType.settlement);
+
+        return res.status(HttpStatus.OK).json({
+            message: "credits transferred successfully",
+            data: {
+                transaction
+            }
+        })
     }
 }

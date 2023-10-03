@@ -8,32 +8,32 @@ export class TransactionService {
         private prisma: PrismaService,
     ) {}
 
-    fetchAllUsersTransactions() {
+    fetchAllEndusersTransactions() {
         return this.prisma.transactions.findMany({
             where: {
                 OR: [{
                     from: {
-                        type: WalletType.user
+                        type: WalletType.enduser
                     }
                 }, {
                     to: {
-                        type: WalletType.user
+                        type: WalletType.enduser
                     }
                 }]
             }
         });
     }
 
-    fetchTransactionsOfOneSystemActor(userId: number) {
+    fetchTransactionsOfOneUser(userId: number) {
         return this.prisma.transactions.findMany({
             where: {
                 OR: [{
                     from: {
-                        userId: userId,
+                        userId,
                     }
                 }, {
                     to: {
-                        userId: userId,
+                        userId,
                     }
                 }]
             }
