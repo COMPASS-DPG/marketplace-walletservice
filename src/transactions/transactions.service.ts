@@ -8,16 +8,16 @@ export class TransactionService {
         private prisma: PrismaService,
     ) {}
 
-    fetchAllEndusersTransactions() {
+    fetchAllConsumersTransactions() {
         return this.prisma.transactions.findMany({
             where: {
                 OR: [{
                     from: {
-                        type: WalletType.enduser
+                        type: WalletType.consumer
                     }
                 }, {
                     to: {
-                        type: WalletType.enduser
+                        type: WalletType.consumer
                     }
                 }]
             }

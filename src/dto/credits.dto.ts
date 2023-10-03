@@ -3,12 +3,12 @@ import { IsInt, IsNotEmpty, Min } from "class-validator";
 
 export class CreditsDto {
 
-    // enduser ID
+    // consumer ID
     @ApiProperty()
     @IsNotEmpty()
     @IsInt()
     @Min(1)
-    enduserId: number;
+    consumerId: number;
 
     // Number of credits transferred
     @ApiProperty()

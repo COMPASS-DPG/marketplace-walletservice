@@ -32,17 +32,17 @@ export class ProviderService {
         return providerWallet;
     }
 
-    async reduceProviderCredits(enduserId: number, credits: number) {
+    async reduceProviderCredits(consumerId: number, credits: number) {
 
         // fetch wallet
-        let providerWallet = await this.getProviderWallet(enduserId);
+        let providerWallet = await this.getProviderWallet(consumerId);
 
         // check credits
         if(providerWallet.credits < credits) {
             throw new BadRequestException("Not enough credits");
         }
         // update wallet
-        providerWallet = await this.walletService.updateWalletCredits(enduserId, providerWallet.credits - credits);
+        providerWallet = await this.walletService.updateWalletCredits(consumerId, providerWallet.credits - credits);
 
         return providerWallet;
     }
