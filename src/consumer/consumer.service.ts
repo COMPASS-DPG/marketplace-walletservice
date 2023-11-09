@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { WalletType } from '@prisma/client';
+import { WalletType, wallets } from '@prisma/client';
 import { WalletService } from 'src/wallet/wallet.service';
 
 @Injectable()
@@ -21,11 +21,11 @@ export class ConsumerService {
         return consumerWallet;
     }
 
-    async reduceConsumerCredits(consumerId: string, credits: number) {
+    async reduceConsumerCredits(consumerId: string, credits: number, consumerWallet?: wallets) {
 
-        // fetch consumer wallet
-        let consumerWallet = await this.getConsumerWallet(consumerId);
-
+        // fetch consumer wallet if not passed
+        if(!consumerWallet)
+            consumerWallet = await this.getConsumerWallet(consumerId);
         // check credits
         if(consumerWallet.credits < credits) {
             throw new BadRequestException("Not enough credits");

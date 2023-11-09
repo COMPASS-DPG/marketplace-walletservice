@@ -60,19 +60,25 @@ export class ConsumerController {
     @ApiOperation({ summary: 'Handle Purchase' })
     @ApiResponse({ status: HttpStatus.OK, description: 'purchase successful', type: Transaction })
     @Post("/:consumerId/purchase")
-    // transfer credits from  endconsumer's wallet to provider wallet for purchase
+    // transfer credits from consumer's wallet to provider wallet for purchase
     async handlePurchase(
         @Param("consumerId", ParseUUIDPipe) consumerId: string,
         @Body() purchaseDto: PurchaseDto,
         @Res() res
     ) {        
+        // fetch consumer wallet
+        let consumerWallet = await this.consumerService.getConsumerWallet(consumerId);
+
+        // check provider
+        let providerWallet = await this.providerService.getProviderWallet(purchaseDto.providerId)
+
         // update consumer wallet
-        const consumerWalletPromise = this.consumerService.reduceConsumerCredits(consumerId, purchaseDto.credits);
+        const consumerWalletPromise = this.consumerService.reduceConsumerCredits(consumerId, purchaseDto.credits, consumerWallet);
 
         // update provider wallet
-        const providerWalletPromise = this.providerService.addCreditsToProvider(purchaseDto.providerId, purchaseDto.credits);
+        const providerWalletPromise = this.providerService.addCreditsToProvider(purchaseDto.providerId, purchaseDto.credits, providerWallet);
 
-        const [consumerWallet, providerWallet] = await Promise.all([consumerWalletPromise, providerWalletPromise]);
+        [consumerWallet, providerWallet] = await Promise.all([consumerWalletPromise, providerWalletPromise]);
 
         // create transaction
         const transaction = await this.transactionService.createTransaction(purchaseDto.credits, consumerWallet.walletId, providerWallet.walletId, TransactionType.purchase);

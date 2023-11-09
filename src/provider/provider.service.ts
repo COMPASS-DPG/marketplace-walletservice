@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { WalletType } from '@prisma/client';
+import { WalletType, wallets } from '@prisma/client';
 import { WalletService } from 'src/wallet/wallet.service';
 
 @Injectable()
@@ -22,10 +22,7 @@ export class ProviderService {
         return providerWallet;
     }
 
-    async addCreditsToProvider(providerId: string, credits: number) {
-
-        // check provider
-        let providerWallet = await this.getProviderWallet(providerId)
+    async addCreditsToProvider(providerId: string, credits: number, providerWallet: wallets) {
 
         // update provider wallet
         providerWallet = await this.walletService.updateWalletCredits(providerId, providerWallet.credits + credits);
