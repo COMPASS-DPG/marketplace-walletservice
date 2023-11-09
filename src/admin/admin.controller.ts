@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { TransactionService } from 'src/transactions/transactions.service';
 import { ConsumerService } from 'src/consumer/consumer.service';
@@ -25,7 +25,7 @@ export class AdminController {
     @Get("/:adminId/transactions/consumers")
     // get all transactions of all consumers
     async getAllConsumersTransactions(
-        @Param("adminId", ParseIntPipe) adminId: number,
+        @Param("adminId", ParseUUIDPipe) adminId: string,
         @Res() res
     ) {
         // check admin
@@ -47,8 +47,8 @@ export class AdminController {
     @Get("/:adminId/transactions/consumers/:consumerId")
     // get all transactions of a particular consumer
     async getConsumerTransactions(
-        @Param("adminId", ParseIntPipe) adminId: number,
-        @Param("consumerId", ParseIntPipe) consumerId: number,
+        @Param("adminId", ParseUUIDPipe) adminId: string,
+        @Param("consumerId", ParseUUIDPipe) consumerId: string,
         @Res() res
     ) {
         // check admin
@@ -72,7 +72,7 @@ export class AdminController {
     @Get("/:adminId/transactions/providers")
     // get all transactions between all providers and admins
     async getAllAdminProvidersTransactions(
-        @Param("adminId", ParseIntPipe) adminId: number,
+        @Param("adminId", ParseUUIDPipe) adminId: string,
         @Res() res
     ) {
         // check admin
@@ -93,8 +93,8 @@ export class AdminController {
     @Get("/:adminId/transactions/providers/:providerId")
     // get all transactions of a particular provider
     async getProviderTransactions(
-        @Param("adminId", ParseIntPipe) adminId: number,
-        @Param("providerId", ParseIntPipe) providerId: number,
+        @Param("adminId", ParseUUIDPipe) adminId: string,
+        @Param("providerId", ParseUUIDPipe) providerId: string,
         @Res() res
     ) {
         // check admin
@@ -118,7 +118,7 @@ export class AdminController {
     @Post("/:adminId/add-credits")
     // add credits to a consumer's wallet
     async addCredits(
-        @Param("adminId", ParseIntPipe) adminId: number,
+        @Param("adminId", ParseUUIDPipe) adminId: string,
         @Body() creditsDto: CreditsDto,
         @Res() res
     ) { 
@@ -144,7 +144,7 @@ export class AdminController {
     @Post("/:adminId/reduce-credits")
     // reduce credits from a consumer's wallet
     async reduceCredits(
-        @Param("adminId", ParseIntPipe) adminId: number,
+        @Param("adminId", ParseUUIDPipe) adminId: string,
         @Body() creditsDto: CreditsDto,
         @Res() res
     ) {

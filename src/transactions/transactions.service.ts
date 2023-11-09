@@ -24,7 +24,7 @@ export class TransactionService {
         });
     }
 
-    fetchTransactionsOfOneUser(userId: number) {
+    fetchTransactionsOfOneUser(userId: string) {
         return this.prisma.transactions.findMany({
             where: {
                 OR: [{

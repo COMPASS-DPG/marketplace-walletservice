@@ -8,7 +8,7 @@ export class ConsumerService {
         private walletService: WalletService,
     ) {}
 
-    async getConsumerWallet(consumerId: number) {
+    async getConsumerWallet(consumerId: string) {
         // get consumer wallet
         const consumerWallet = await this.walletService.fetchWallet(consumerId)
         if(consumerWallet == null) {
@@ -21,7 +21,7 @@ export class ConsumerService {
         return consumerWallet;
     }
 
-    async reduceConsumerCredits(consumerId: number, credits: number) {
+    async reduceConsumerCredits(consumerId: string, credits: number) {
 
         // fetch consumer wallet
         let consumerWallet = await this.getConsumerWallet(consumerId);
@@ -36,7 +36,7 @@ export class ConsumerService {
         return consumerWallet;
     }
 
-    async addCreditsToConsumer(consumerId: number, credits: number) {
+    async addCreditsToConsumer(consumerId: string, credits: number) {
 
         // fetch consumer wallet
         let consumerWallet = await this.getConsumerWallet(consumerId);

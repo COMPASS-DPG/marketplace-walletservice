@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
 import { TransactionType } from '@prisma/client';
 import { TransactionService } from 'src/transactions/transactions.service';
 import { ConsumerService } from './consumer.service';
@@ -22,7 +22,7 @@ export class ConsumerController {
     @Get("/:consumerId/credits")
     // get credits of a particular consumer
     async getCredits(
-        @Param("consumerId", ParseIntPipe) consumerId: number,
+        @Param("consumerId", ParseUUIDPipe) consumerId: string,
         @Res() res
     ) {
         // fetch wallet
@@ -41,7 +41,7 @@ export class ConsumerController {
     @Get("/:consumerId/transactions")
     // get all transactions of a particular consumer
     async getConsumerTransactions(
-        @Param("consumerId", ParseIntPipe) consumerId: number,
+        @Param("consumerId", ParseUUIDPipe) consumerId: string,
         @Res() res
     ) {
         // check consumer
@@ -62,7 +62,7 @@ export class ConsumerController {
     @Post("/:consumerId/purchase")
     // transfer credits from  endconsumer's wallet to provider wallet for purchase
     async handlePurchase(
-        @Param("consumerId", ParseIntPipe) consumerId: number,
+        @Param("consumerId", ParseUUIDPipe) consumerId: string,
         @Body() purchaseDto: PurchaseDto,
         @Res() res
     ) {        

@@ -8,7 +8,7 @@ export class ProviderService {
         private walletService: WalletService,
     ) {}
 
-    async getProviderWallet(providerId: number) {
+    async getProviderWallet(providerId: string) {
         // get provider wallet
         const providerWallet = await this.walletService.fetchWallet(providerId)
         if(providerWallet == null) {
@@ -22,7 +22,7 @@ export class ProviderService {
         return providerWallet;
     }
 
-    async addCreditsToProvider(providerId: number, credits: number) {
+    async addCreditsToProvider(providerId: string, credits: number) {
 
         // check provider
         let providerWallet = await this.getProviderWallet(providerId)
@@ -32,7 +32,7 @@ export class ProviderService {
         return providerWallet;
     }
 
-    async reduceProviderCredits(consumerId: number, credits: number) {
+    async reduceProviderCredits(consumerId: string, credits: number) {
 
         // fetch wallet
         let providerWallet = await this.getProviderWallet(consumerId);

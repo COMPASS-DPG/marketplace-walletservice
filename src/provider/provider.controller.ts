@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
 import { TransactionService } from 'src/transactions/transactions.service';
 import { ProviderService } from './provider.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -21,7 +21,7 @@ export class ProviderController {
     @Get("/:providerId/transactions")
     // get all transactions of a particular provider
     async getProviderTransactions(
-        @Param("providerId", ParseIntPipe) providerId: number,
+        @Param("providerId", ParseUUIDPipe) providerId: string,
         @Res() res
     ) {
         // check provider
@@ -42,7 +42,7 @@ export class ProviderController {
     @Post("/:providerId/settlement-transaction")
     // Transfer credits from provider wallet to admin wallet 
     async settleProviderWallet(
-        @Param("providerId", ParseIntPipe) providerId: number,
+        @Param("providerId", ParseUUIDPipe) providerId: string,
         @Body() settlementDto: SettlementDto,
         @Res() res
     ) {

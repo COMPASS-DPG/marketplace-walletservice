@@ -7,7 +7,7 @@ export class WalletService {
         private prisma: PrismaService,
     ) {}
 
-    fetchWallet(userId: number) {
+    fetchWallet(userId: string) {
         return this.prisma.wallets.findUnique({
             where: {
                 userId
@@ -15,7 +15,7 @@ export class WalletService {
         })
     }
 
-    updateWalletCredits(userId: number, newCreditsAmount: number) {
+    updateWalletCredits(userId: string, newCreditsAmount: number) {
         return this.prisma.wallets.update({
             where: {
                 userId

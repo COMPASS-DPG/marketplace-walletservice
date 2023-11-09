@@ -8,7 +8,7 @@ export class AdminService {
         private walletService: WalletService,
     ) {}
 
-    async getAdminWallet(adminId: number) {
+    async getAdminWallet(adminId: string) {
         // get admin wallet
         const adminWallet = await this.walletService.fetchWallet(adminId);
         if(adminWallet == null) {
@@ -22,7 +22,7 @@ export class AdminService {
         return adminWallet;
     }
 
-    async addCreditsToAdmin(adminId: number, credits: number) {
+    async addCreditsToAdmin(adminId: string, credits: number) {
 
         // check admin
         let adminWallet = await this.getAdminWallet(adminId)
