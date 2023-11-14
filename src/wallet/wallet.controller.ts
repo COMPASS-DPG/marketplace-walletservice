@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Logger, Res } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Logger, Post, Res } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { WalletService } from "./wallet.service";
 import { CreateWalletDto, CreateWalletResponse } from "./dto/wallet.dto";
@@ -16,7 +16,7 @@ export class WalletController {
 
     @ApiOperation({ summary: 'Create New Wallet' })
     @ApiResponse({ status: HttpStatus.CREATED, description: 'Wallet created successfully', type: CreateWalletResponse })
-    @Get("/create")
+    @Post("/create")
     async getCredits(
         @Body() createWalletDto: CreateWalletDto,
         @Res() res
