@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateWalletDto, CreateWalletResponse } from './dto/wallet.dto';
 
 @Injectable()
 export class WalletService {
@@ -25,6 +26,12 @@ export class WalletService {
                     set: newCreditsAmount
                 }
             }
+        });
+    }
+
+    createWallet(createWalletDto: CreateWalletDto): Promise<CreateWalletResponse> {
+        return this.prisma.wallets.create({
+            data: createWalletDto
         });
     }
 }

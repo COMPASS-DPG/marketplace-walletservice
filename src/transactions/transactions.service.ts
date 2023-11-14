@@ -13,11 +13,11 @@ export class TransactionService {
             where: {
                 OR: [{
                     from: {
-                        type: WalletType.consumer
+                        type: WalletType.CONSUMER
                     }
                 }, {
                     to: {
-                        type: WalletType.consumer
+                        type: WalletType.CONSUMER
                     }
                 }]
             }
@@ -44,10 +44,10 @@ export class TransactionService {
         return this.prisma.transactions.findMany({
             where: {
                 from: {
-                    type: WalletType.provider
+                    type: WalletType.PROVIDER
                 },
                 to: {
-                    type: WalletType.admin
+                    type: WalletType.ADMIN
                 }
                 
             }

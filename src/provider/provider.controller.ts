@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Logger, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
 import { TransactionService } from 'src/transactions/transactions.service';
 import { ProviderService } from './provider.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -7,10 +7,14 @@ import { SettlementDto } from 'src/dto/credits.dto';
 import { AdminService } from 'src/admin/admin.service';
 import { TransactionType } from '@prisma/client';
 import { WalletCredits } from 'src/wallet/dto/wallet.dto';
+import { getPrismaErrorStatusAndMessage } from 'src/utils/utils';
 
 @ApiTags('providers')
 @Controller('providers')
 export class ProviderController {
+
+    private readonly logger = new Logger(ProviderController.name);
+
     constructor(
         private transactionService: TransactionService,
         private providerService: ProviderService,
@@ -24,15 +28,29 @@ export class ProviderController {
         @Param("providerId", ParseUUIDPipe) providerId: string,
         @Res() res
     ) {
-        // fetch wallet
-        const wallet = await this.providerService.getProviderWallet(providerId);
+        try {
+            this.logger.log(`Getting provider wallet`);
 
-        return res.status(HttpStatus.OK).json({
-            message: "Credits fetched successfully",
-            data: {
-                credits: wallet.credits
-            }
-        })
+            // fetch wallet
+            const wallet = await this.providerService.getProviderWallet(providerId);
+
+            this.logger.log(`Successfully retrieved the credits`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "Credits fetched successfully",
+                data: {
+                    credits: wallet.credits
+                }
+            })
+        } catch (err) {
+            this.logger.error(`Failed to retreive the credits`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to retreive the credits",
+            });
+        }
     }
 
     @ApiOperation({ summary: 'Get Provider Transactions' })
@@ -43,17 +61,31 @@ export class ProviderController {
         @Param("providerId", ParseUUIDPipe) providerId: string,
         @Res() res
     ) {
-        // check provider
-        await this.providerService.getProviderWallet(providerId);
+        try {
+            this.logger.log(`Validating provider`);
+            
+            // check provider
+            await this.providerService.getProviderWallet(providerId);
 
-        // fetch transactions
-        const transactions = await this.transactionService.fetchTransactionsOfOneUser(providerId);
-        return res.status(HttpStatus.OK).json({
-            message: "transactions fetched successfully",
-            data: {
-                transactions
-            }
-        })
+            this.logger.log(`Getting all provider's transactions`);
+
+            // fetch transactions
+            const transactions = await this.transactionService.fetchTransactionsOfOneUser(providerId);
+            return res.status(HttpStatus.OK).json({
+                message: "transactions fetched successfully",
+                data: {
+                    transactions
+                }
+            })
+        } catch (err) {
+            this.logger.error(`Failed to retreive the transactions`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to retreive the transactions",
+            });
+        }
     }
 
     @ApiOperation({ summary: 'Transfer settlement credits and record transaction' })
@@ -65,22 +97,46 @@ export class ProviderController {
         @Body() settlementDto: SettlementDto,
         @Res() res
     ) {
-        // update provider wallet
-        const providerWalletPromise = this.providerService.reduceProviderCredits(providerId, settlementDto.credits);
+        try {
+            this.logger.log(`Updating provider wallet`);
 
-        // update admin wallet
-        const adminWalletPromise = this.adminService.addCreditsToAdmin(settlementDto.adminId, settlementDto.credits);
+            // update provider wallet
+            const providerWalletPromise = this.providerService.reduceProviderCredits(providerId, settlementDto.credits);
 
-        const [providerWallet, adminWallet] = await Promise.all([providerWalletPromise, adminWalletPromise]);
+            this.logger.log(`Updating admin wallet`);
 
-        // create transaction
-        const transaction = await this.transactionService.createTransaction(settlementDto.credits, providerWallet.walletId, adminWallet.walletId, TransactionType.settlement);
+            // update admin wallet
+            const adminWalletPromise = this.adminService.addCreditsToAdmin(settlementDto.adminId, settlementDto.credits);
 
-        return res.status(HttpStatus.OK).json({
-            message: "credits transferred successfully",
-            data: {
-                transaction
-            }
-        })
+            const [providerWallet, adminWallet] = await Promise.all([providerWalletPromise, adminWalletPromise]);
+
+            this.logger.log(`Creating transaction`);
+
+            // create transaction
+            const transaction = 
+                await this.transactionService.createTransaction(
+                    settlementDto.credits, 
+                    providerWallet.walletId, 
+                    adminWallet.walletId, 
+                    TransactionType.SETTLEMENT
+                );
+
+            this.logger.log(`Successfully settled credits`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "credits transferred successfully",
+                data: {
+                    transaction
+                }
+            })
+        } catch (err) {
+            this.logger.error(`Failed to settle the credits`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to settle the credits",
+            });
+        }
     }
 }

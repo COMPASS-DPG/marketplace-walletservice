@@ -16,7 +16,7 @@ export class ProviderService {
         }
 
         // check provider
-        if(providerWallet.type != WalletType.provider) {
+        if(providerWallet.type != WalletType.PROVIDER) {
             throw new BadRequestException("Wallet does not belong to provider");
         }
         return providerWallet;

@@ -15,7 +15,7 @@ export class ConsumerService {
             throw new NotFoundException("Wallet does not exist");
         }
         // check consumer
-        if(consumerWallet.type != WalletType.consumer) {
+        if(consumerWallet.type != WalletType.CONSUMER) {
             throw new BadRequestException("Wallet does not belong to a consumer");
         }
         return consumerWallet;

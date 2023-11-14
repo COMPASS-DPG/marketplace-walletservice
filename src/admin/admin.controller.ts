@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Logger, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { TransactionService } from 'src/transactions/transactions.service';
 import { ConsumerService } from 'src/consumer/consumer.service';
@@ -8,11 +8,15 @@ import { CreditsDto } from '../dto/credits.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Transaction } from 'src/transactions/dto/transactions.dto';
 import { WalletCredits } from 'src/wallet/dto/wallet.dto';
+import { getPrismaErrorStatusAndMessage } from 'src/utils/utils';
 
 
 @ApiTags('admin')
 @Controller('admin')
 export class AdminController {
+
+    private readonly logger = new Logger(AdminController.name);
+
     constructor(
         private transactionService: TransactionService,
         private consumerService: ConsumerService,
@@ -28,18 +32,34 @@ export class AdminController {
         @Param("adminId", ParseUUIDPipe) adminId: string,
         @Res() res
     ) {
-        // check admin
-        await this.adminService.getAdminWallet(adminId);
-        
-        // fetch transactions
-        const transactions = await this.transactionService.fetchAllConsumersTransactions();
+        try {
+            this.logger.log(`Validating admin`);
+            
+            // check admin
+            await this.adminService.getAdminWallet(adminId);
+            
+            this.logger.log(`Getting all consumer transactions`);
 
-        return res.status(HttpStatus.OK).json({
-            message: "transactions fetched successfully",
-            data: {
-                transactions
-            }
-        })
+            // fetch transactions
+            const transactions = await this.transactionService.fetchAllConsumersTransactions();
+
+            this.logger.log(`Successfully retrieved all the transactions`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "transactions fetched successfully",
+                data: {
+                    transactions
+                }
+            });
+        } catch (err) {
+            this.logger.error(`Failed to retreive all the transactions`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to fetch all the transactions",
+            });
+        }
     }
 
     @ApiOperation({ summary: 'Get One Consumer Transactions' })
@@ -51,20 +71,39 @@ export class AdminController {
         @Param("consumerId", ParseUUIDPipe) consumerId: string,
         @Res() res
     ) {
-        // check admin
-        await this.adminService.getAdminWallet(adminId);
+        try {
+            this.logger.log(`Validating admin`);
 
-        // check consumer
-        await this.consumerService.getConsumerWallet(consumerId);
-        
-        // fetch transactions
-        const transactions = await this.transactionService.fetchTransactionsOfOneUser(consumerId);
-        return res.status(HttpStatus.OK).json({
-            message: "transactions fetched successfully",
-            data: {
-                transactions
-            }
-        })
+            // check admin
+            await this.adminService.getAdminWallet(adminId);
+
+            this.logger.log(`Validating Consumer`);
+
+            // check consumer
+            await this.consumerService.getConsumerWallet(consumerId);
+
+            this.logger.log(`Getting the consumer transactions`);
+
+            // fetch transactions
+            const transactions = await this.transactionService.fetchTransactionsOfOneUser(consumerId);
+
+            this.logger.log(`Successfully retrieved all the transactions`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "transactions fetched successfully",
+                data: {
+                    transactions
+                }
+            });
+        } catch (err) {
+            this.logger.error(`Failed to retreive the transactions`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to fetch the transactions",
+            });
+        }
     }
 
     @ApiOperation({ summary: 'Get All Admin Providers Transactions' })
@@ -75,17 +114,34 @@ export class AdminController {
         @Param("adminId", ParseUUIDPipe) adminId: string,
         @Res() res
     ) {
-        // check admin
-        await this.adminService.getAdminWallet(adminId);
-        
-        // fetch transactions
-        const transactions = await this.transactionService.fetchAllAdminProviderTransactions();
-        return res.status(HttpStatus.OK).json({
-            message: "transactions fetched successfully",
-            data: {
-                transactions
-            }
-        })
+        try {
+            this.logger.log(`Validating admin`);
+
+            // check admin
+            await this.adminService.getAdminWallet(adminId);
+            
+            this.logger.log(`Getting all providers transactions`);
+
+            // fetch transactions
+            const transactions = await this.transactionService.fetchAllAdminProviderTransactions();
+
+            this.logger.log(`Successfully retrieved all the transactions`);
+            
+            return res.status(HttpStatus.OK).json({
+                message: "transactions fetched successfully",
+                data: {
+                    transactions
+                }
+            });
+        } catch (err) {
+            this.logger.error(`Failed to retreive the transactions`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to fetch the transactions",
+            });
+        }
     }
 
     @ApiOperation({ summary: 'Get One Provider Transactions' })
@@ -97,20 +153,39 @@ export class AdminController {
         @Param("providerId", ParseUUIDPipe) providerId: string,
         @Res() res
     ) {
-        // check admin
-        await this.adminService.getAdminWallet(adminId);
+        try {
+            this.logger.log(`Validating admin`);
 
-        // check provider
-        await this.providerService.getProviderWallet(providerId);
-        
-        // fetch transactions
-        const transactions = await this.transactionService.fetchTransactionsOfOneUser(providerId);
-        return res.status(HttpStatus.OK).json({
-            message: "transactions fetched successfully",
-            data: {
-                transactions
-            }
-        })
+            // check admin
+            await this.adminService.getAdminWallet(adminId);
+
+            this.logger.log(`Validating Provider`);
+
+            // check provider
+            await this.providerService.getProviderWallet(providerId);
+
+            this.logger.log(`Getting the providers transactions`);
+            
+            // fetch transactions
+            const transactions = await this.transactionService.fetchTransactionsOfOneUser(providerId);
+
+            this.logger.log(`Successfully retrieved all the transactions`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "transactions fetched successfully",
+                data: {
+                    transactions
+                }
+            });
+        } catch (err) {
+            this.logger.error(`Failed to retreive the transactions`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to fetch the transactions",
+            });
+        }    
     }
 
     @ApiOperation({ summary: 'Add Credits' })
@@ -122,21 +197,39 @@ export class AdminController {
         @Body() creditsDto: CreditsDto,
         @Res() res
     ) { 
-        // check admin
-        const adminWallet = await this.adminService.getAdminWallet(adminId);
+        try {
+            this.logger.log(`Validating admin`);
 
-        // update wallet
-        const consumerWallet = await this.consumerService.addCreditsToConsumer(creditsDto.consumerId, creditsDto.credits);
-        
-        // create transaction
-        await this.transactionService.createTransaction(creditsDto.credits, adminWallet.walletId, consumerWallet.walletId, TransactionType.creditRequest);
+            // check admin
+            const adminWallet = await this.adminService.getAdminWallet(adminId);
 
-        return res.status(HttpStatus.OK).json({
-            message: "Credits added successfully",
-            data: {
-                credits: consumerWallet.credits
-            }
-        })
+            this.logger.log(`Updating Consumer wallet`);
+
+            // update wallet
+            const consumerWallet = await this.consumerService.addCreditsToConsumer(creditsDto.consumerId, creditsDto.credits);
+            
+            this.logger.log(`Creating transaction`);
+
+            // create transaction
+            await this.transactionService.createTransaction(creditsDto.credits, adminWallet.walletId, consumerWallet.walletId, TransactionType.CREDIT_REQUEST);
+
+            this.logger.log(`Successfully added credits`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "Credits added successfully",
+                data: {
+                    credits: consumerWallet.credits
+                }
+            });
+        } catch (err) {
+            this.logger.error(`Failed to add credits`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to add credits",
+            });
+        } 
     }
 
     @ApiOperation({ summary: 'Reduce Credits' })
@@ -148,20 +241,38 @@ export class AdminController {
         @Body() creditsDto: CreditsDto,
         @Res() res
     ) {
-        // check admin
-        const adminWallet = await this.adminService.getAdminWallet(adminId);
+        try {
+            this.logger.log(`Validating admin`);
 
-        // update wallet
-        const consumerWallet = await this.consumerService.reduceConsumerCredits(creditsDto.consumerId, creditsDto.credits);
+            // check admin
+            const adminWallet = await this.adminService.getAdminWallet(adminId);
 
-        // create transaction
-        await this.transactionService.createTransaction(creditsDto.credits, consumerWallet.walletId, adminWallet.walletId, TransactionType.creditRequest);
-        
-        return res.status(HttpStatus.OK).json({
-            message: "Credits reduced successfully",
-            data: {
-                credits: consumerWallet.credits
-            }
-        })
+            this.logger.log(`Updating Consumer wallet`);
+
+            // update wallet
+            const consumerWallet = await this.consumerService.reduceConsumerCredits(creditsDto.consumerId, creditsDto.credits);
+
+            this.logger.log(`Creating transaction`);
+
+            // create transaction
+            await this.transactionService.createTransaction(creditsDto.credits, consumerWallet.walletId, adminWallet.walletId, TransactionType.CREDIT_REQUEST);
+            
+            this.logger.log(`Successfully reduced credits`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "Credits reduced successfully",
+                data: {
+                    credits: consumerWallet.credits
+                }
+            })
+        } catch (err) {
+            this.logger.error(`Failed to reduce credits`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to reduce credits",
+            });
+        } 
     }
 }

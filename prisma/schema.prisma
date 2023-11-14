@@ -11,21 +11,21 @@ datasource db {
 }
 
 enum WalletType {
-  admin
-  provider
-  consumer
+  ADMIN
+  PROVIDER
+  CONSUMER
 }
 
 enum WalletStatus {
-  active
-  inactive
-  frozen
+  ACTIVE
+  INACTIVE
+  FROZEN
 }
 
 enum TransactionType {
-  purchase
-  creditRequest
-  settlement
+  PURCHASE
+  CREDIT_REQUEST
+  SETTLEMENT
 }
 
 
@@ -33,7 +33,7 @@ model wallets {
   walletId   Int  @id @default(autoincrement())
   userId     String    @unique
   type       WalletType
-  status     WalletStatus
+  status     WalletStatus @default(ACTIVE)
   credits    Int
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt

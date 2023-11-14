@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Logger, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
 import { TransactionType } from '@prisma/client';
 import { TransactionService } from 'src/transactions/transactions.service';
 import { ConsumerService } from './consumer.service';
@@ -7,10 +7,14 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WalletCredits } from 'src/wallet/dto/wallet.dto';
 import { Transaction } from 'src/transactions/dto/transactions.dto';
 import { PurchaseDto } from 'src/dto/credits.dto';
+import { getPrismaErrorStatusAndMessage } from 'src/utils/utils';
 
 @ApiTags('consumers')
 @Controller('consumers')
 export class ConsumerController {
+
+    private readonly logger = new Logger(ConsumerController.name);
+
     constructor(
         private transactionService: TransactionService,
         private consumerService: ConsumerService,
@@ -25,15 +29,29 @@ export class ConsumerController {
         @Param("consumerId", ParseUUIDPipe) consumerId: string,
         @Res() res
     ) {
-        // fetch wallet
-        const wallet = await this.consumerService.getConsumerWallet(consumerId);
+        try {
+            this.logger.log(`Getting consumer wallet`);
 
-        return res.status(HttpStatus.OK).json({
-            message: "Credits fetched successfully",
-            data: {
-                credits: wallet.credits
-            }
-        })
+            // fetch wallet
+            const wallet = await this.consumerService.getConsumerWallet(consumerId);
+            
+            this.logger.log(`Successfully retrieved the credits`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "Credits fetched successfully",
+                data: {
+                    credits: wallet.credits
+                }
+            });
+        } catch (err) {
+            this.logger.error(`Failed to retreive the credits`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to fetch the credits",
+            });
+        }
     }
 
     @ApiOperation({ summary: 'Get Consumer Transactions' })
@@ -44,17 +62,34 @@ export class ConsumerController {
         @Param("consumerId", ParseUUIDPipe) consumerId: string,
         @Res() res
     ) {
-        // check consumer
-        await this.consumerService.getConsumerWallet(consumerId);
+        try {
+            this.logger.log(`Validating consumer`);
 
-        // fetch transactions
-        const transactions = await this.transactionService.fetchTransactionsOfOneUser(consumerId);
-        return res.status(HttpStatus.OK).json({
-            message: "transactions fetched successfully",
-            data: {
-                transactions
-            }
-        })
+            // check consumer
+            await this.consumerService.getConsumerWallet(consumerId);
+
+            this.logger.log(`Getting consumer transactions`);
+
+            // fetch transactions
+            const transactions = await this.transactionService.fetchTransactionsOfOneUser(consumerId);
+
+            this.logger.log(`Successfully retrieved the consumer transactions`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "transactions fetched successfully",
+                data: {
+                    transactions
+                }
+            });
+        } catch (err) {
+            this.logger.error(`Failed to retreive the transactions`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to fetch the transactions",
+            });
+        }
     }
 
     @ApiOperation({ summary: 'Handle Purchase' })
@@ -66,28 +101,50 @@ export class ConsumerController {
         @Body() purchaseDto: PurchaseDto,
         @Res() res
     ) {        
-        // fetch consumer wallet
-        let consumerWallet = await this.consumerService.getConsumerWallet(consumerId);
+        try {
+            this.logger.log(`Getting consumer wallet`);
 
-        // check provider
-        let providerWallet = await this.providerService.getProviderWallet(purchaseDto.providerId)
+            // fetch consumer wallet
+            let consumerWallet = await this.consumerService.getConsumerWallet(consumerId);
 
-        // update consumer wallet
-        const consumerWalletPromise = this.consumerService.reduceConsumerCredits(consumerId, purchaseDto.credits, consumerWallet);
+            this.logger.log(`Validating provider`);
 
-        // update provider wallet
-        const providerWalletPromise = this.providerService.addCreditsToProvider(purchaseDto.providerId, purchaseDto.credits, providerWallet);
+            // check provider
+            let providerWallet = await this.providerService.getProviderWallet(purchaseDto.providerId)
 
-        [consumerWallet, providerWallet] = await Promise.all([consumerWalletPromise, providerWalletPromise]);
+            this.logger.log(`Updating consumer wallet`);
 
-        // create transaction
-        const transaction = await this.transactionService.createTransaction(purchaseDto.credits, consumerWallet.walletId, providerWallet.walletId, TransactionType.purchase);
+            // update consumer wallet
+            const consumerWalletPromise = this.consumerService.reduceConsumerCredits(consumerId, purchaseDto.credits, consumerWallet);
 
-        return res.status(HttpStatus.OK).json({
-            message: "purchase successful",
-            data: {
-                transaction
-            }
-        })
+            this.logger.log(`Updating provider wallet`);
+
+            // update provider wallet
+            const providerWalletPromise = this.providerService.addCreditsToProvider(purchaseDto.providerId, purchaseDto.credits, providerWallet);
+
+            [consumerWallet, providerWallet] = await Promise.all([consumerWalletPromise, providerWalletPromise]);
+
+            this.logger.log(`Creating transaction`);
+
+            // create transaction
+            const transaction = await this.transactionService.createTransaction(purchaseDto.credits, consumerWallet.walletId, providerWallet.walletId, TransactionType.PURCHASE);
+
+            this.logger.log(`Successfully handled purchase`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "purchase successful",
+                data: {
+                    transaction
+                }
+            });
+        } catch (err) {
+            this.logger.error(`Failed to handle purchase`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to handle purchase",
+            });
+        }
     }
 }

@@ -16,7 +16,7 @@ export class AdminService {
         }
 
         // check admin
-        if(adminWallet.type != WalletType.admin) {
+        if(adminWallet.type != WalletType.ADMIN) {
             throw new BadRequestException("Wallet does not belong to admin");
         }
         return adminWallet;
