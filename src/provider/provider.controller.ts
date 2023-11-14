@@ -6,6 +6,7 @@ import { Transaction } from 'src/transactions/dto/transactions.dto';
 import { SettlementDto } from 'src/dto/credits.dto';
 import { AdminService } from 'src/admin/admin.service';
 import { TransactionType } from '@prisma/client';
+import { WalletCredits } from 'src/wallet/dto/wallet.dto';
 
 @ApiTags('providers')
 @Controller('providers')
@@ -16,6 +17,24 @@ export class ProviderController {
         private adminService: AdminService
     ) {}
     
+    @ApiOperation({ summary: 'Get Provider Credits' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Credits fetched successfully', type: WalletCredits })
+    @Get("/:providerId/credits")
+    async getCredits(
+        @Param("providerId", ParseUUIDPipe) providerId: string,
+        @Res() res
+    ) {
+        // fetch wallet
+        const wallet = await this.providerService.getProviderWallet(providerId);
+
+        return res.status(HttpStatus.OK).json({
+            message: "Credits fetched successfully",
+            data: {
+                credits: wallet.credits
+            }
+        })
+    }
+
     @ApiOperation({ summary: 'Get Provider Transactions' })
     @ApiResponse({ status: HttpStatus.OK, description: 'transactions fetched successfully', type: [Transaction] })
     @Get("/:providerId/transactions")
