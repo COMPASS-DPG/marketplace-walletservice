@@ -3,7 +3,7 @@ import {
   PrismaClientKnownRequestError,
   PrismaClientValidationError,
 } from "@prisma/client/runtime/library";
-import _ from "lodash";
+import {get} from "lodash";
 
 export const validationOptions = {
   whitelist: true,
@@ -22,8 +22,7 @@ export function getPrismaErrorStatusAndMessage(error: any): {
     error instanceof PrismaClientKnownRequestError ||
     error instanceof PrismaClientValidationError
   ) {
-    const errorCode = _.get(error, "code", "DEFAULT_ERROR_CODE");
-
+    const errorCode = get(error, "code", "DEFAULT_ERROR_CODE");
     const errorCodeMap: Record<string, number> = {
       P2000: HttpStatus.BAD_REQUEST,
       P2002: HttpStatus.CONFLICT,

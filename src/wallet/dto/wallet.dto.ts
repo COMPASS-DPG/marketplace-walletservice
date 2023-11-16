@@ -20,7 +20,6 @@ export class CreateWalletDto {
     // The role of the user wallet belongs to
     @ApiProperty()
     @IsEnum(WalletType)
-    @Min(0)
     type: WalletType;
 
     // specifying the number of credits while creating the wallet

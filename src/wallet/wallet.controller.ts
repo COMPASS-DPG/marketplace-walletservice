@@ -17,12 +17,12 @@ export class WalletController {
     @ApiOperation({ summary: 'Create New Wallet' })
     @ApiResponse({ status: HttpStatus.CREATED, description: 'Wallet created successfully', type: CreateWalletResponse })
     @Post("/create")
-    async getCredits(
+    async createWallet(
         @Body() createWalletDto: CreateWalletDto,
         @Res() res
     ) {
         try {
-            this.logger.log(`Fetching wallet`);
+            this.logger.log(`Creating wallet`);
 
             // fetch wallet
             const wallet = await this.walletService.createWallet(createWalletDto);
