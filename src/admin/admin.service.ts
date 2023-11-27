@@ -12,7 +12,7 @@ export class AdminService {
         // get admin wallet
         const adminWallet = await this.walletService.fetchWallet(adminId);
         if(adminWallet == null) {
-            throw new NotFoundException("Wallet does not exist");
+            throw new NotFoundException("Admin Wallet does not exist");
         }
 
         // check admin

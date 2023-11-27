@@ -12,7 +12,7 @@ export class ConsumerService {
         // get consumer wallet
         const consumerWallet = await this.walletService.fetchWallet(consumerId)
         if(consumerWallet == null) {
-            throw new NotFoundException("Wallet does not exist");
+            throw new NotFoundException("Consumer Wallet does not exist");
         }
         // check consumer
         if(consumerWallet.type != WalletType.CONSUMER) {
