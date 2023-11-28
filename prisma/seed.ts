@@ -34,6 +34,38 @@ async function main() {
     },
   });
 
+  const wallet5 = await prisma.wallets.create({
+    data: {
+      userId: "123e4567-e89b-42d3-a456-556642440010",
+      type: WalletType.PROVIDER,
+      credits: 300,
+    },
+  });
+
+  const wallet6 = await prisma.wallets.create({
+    data: {
+      userId: "123e4567-e89b-42d3-a456-556642440011",
+      type: WalletType.PROVIDER,
+      credits: 300,
+    },
+  });
+
+  const wallet7 = await prisma.wallets.create({
+    data: {
+      userId: "123e4567-e89b-42d3-a456-556642440012",
+      type: WalletType.PROVIDER,
+      credits: 300,
+    },
+  });
+
+  const wallet8 = await prisma.wallets.create({
+    data: {
+      userId: "123e4567-e89b-42d3-a456-556642440013",
+      type: WalletType.PROVIDER,
+      credits: 300,
+    },
+  });
+
   const transaction1 = await prisma.transactions.create({
     data: {
       credits: 100,
@@ -63,7 +95,8 @@ async function main() {
       description: "Credit balance settled"
     }
   })
-  console.log({ wallet1, wallet2, wallet3, wallet4, transaction1, transaction2, transaction3 });
+  console.log({ wallet1, wallet2, wallet3, wallet4, wallet5, wallet6, wallet7, wallet8, 
+    transaction1, transaction2, transaction3 });
 }
 main()
   .then(async () => {
