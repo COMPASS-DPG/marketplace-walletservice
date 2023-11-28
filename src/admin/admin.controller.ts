@@ -24,6 +24,44 @@ export class AdminController {
         private providerService: ProviderService
     ) {}
 
+    @ApiOperation({ summary: 'Get All Consumers Credits' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Credits fetched successfully', type: [CreditsDto] })
+    @Get("/:adminId/credits/consumers")
+    // get credits of all consumers
+    async getAllConsumersCredits(
+        @Param("adminId", ParseUUIDPipe) adminId: string,
+        @Res() res
+    ) {
+        try {
+            this.logger.log(`Validating admin`);
+            
+            // check admin
+            await this.adminService.getAdminWallet(adminId);
+            
+            this.logger.log(`Getting all consumer credits`);
+
+            // fetch credits
+            const creditsResponse = await this.consumerService.getAllConsumersCredits();
+
+            this.logger.log(`Successfully retrieved credits`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "credits fetched successfully",
+                data: {
+                    credits: creditsResponse
+                }
+            });
+        } catch (err) {
+            this.logger.error(`Failed to retreive credits`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to fetch credits",
+            });
+        }
+    }
+
     @ApiOperation({ summary: 'Get All Consumers Transactions' })
     @ApiResponse({ status: HttpStatus.OK, description: 'transactions fetched successfully', type: [Transaction] })
     @Get("/:adminId/transactions/consumers")
@@ -211,7 +249,13 @@ export class AdminController {
             this.logger.log(`Creating transaction`);
 
             // create transaction
-            await this.transactionService.createTransaction(creditsDto.credits, adminWallet.walletId, consumerWallet.walletId, TransactionType.CREDIT_REQUEST);
+            await this.transactionService.createTransaction(
+                creditsDto.credits, 
+                adminWallet.walletId, 
+                consumerWallet.walletId, 
+                TransactionType.ADD_CREDITS,
+                "Credits added by the admin"
+            );
 
             this.logger.log(`Successfully added credits`);
 
@@ -255,7 +299,13 @@ export class AdminController {
             this.logger.log(`Creating transaction`);
 
             // create transaction
-            await this.transactionService.createTransaction(creditsDto.credits, consumerWallet.walletId, adminWallet.walletId, TransactionType.CREDIT_REQUEST);
+            await this.transactionService.createTransaction(
+                creditsDto.credits, 
+                consumerWallet.walletId, 
+                adminWallet.walletId, 
+                TransactionType.ADD_CREDITS,
+                "Credits reduced by the admin"
+            );
             
             this.logger.log(`Successfully reduced credits`);
 

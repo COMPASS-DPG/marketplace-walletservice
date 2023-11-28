@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateWalletDto, CreateWalletResponse } from './dto/wallet.dto';
+import { WalletType } from '@prisma/client';
 
 @Injectable()
 export class WalletService {
@@ -12,6 +13,18 @@ export class WalletService {
         return this.prisma.wallets.findUnique({
             where: {
                 userId
+            }
+        })
+    }
+
+    getCreditsFromWallets(walletType: WalletType) {
+        return this.prisma.wallets.findMany({
+            where: {
+                type: walletType
+            },
+            select: {
+                userId: true,
+                credits: true
             }
         })
     }

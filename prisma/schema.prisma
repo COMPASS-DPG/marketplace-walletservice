@@ -24,7 +24,8 @@ enum WalletStatus {
 
 enum TransactionType {
   PURCHASE
-  CREDIT_REQUEST
+  ADD_CREDITS
+  REDUCE_CREDITS
   SETTLEMENT
 }
 
