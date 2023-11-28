@@ -4,7 +4,7 @@ import { TransactionService } from 'src/transactions/transactions.service';
 import { ConsumerService } from 'src/consumer/consumer.service';
 import { TransactionType } from '@prisma/client';
 import { ProviderService } from 'src/provider/provider.service';
-import { CreditsDto } from '../dto/credits.dto';
+import { CreditsDto, ProviderCreditsDto, SettlementDto } from '../dto/credits.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Transaction } from 'src/transactions/dto/transactions.dto';
 import { WalletCredits } from 'src/wallet/dto/wallet.dto';
@@ -140,6 +140,44 @@ export class AdminController {
             res.status(statusCode).json({
                 statusCode, 
                 message: errorMessage || "Failed to fetch the transactions",
+            });
+        }
+    }
+
+    @ApiOperation({ summary: 'Get All Providers Credits' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Credits fetched successfully', type: [ProviderCreditsDto] })
+    @Get("/:adminId/credits/providers")
+    // get credits of all providers
+    async getAllProvidersCredits(
+        @Param("adminId", ParseUUIDPipe) adminId: string,
+        @Res() res
+    ) {
+        try {
+            this.logger.log(`Validating admin`);
+            
+            // check admin
+            await this.adminService.getAdminWallet(adminId);
+            
+            this.logger.log(`Getting all provider credits`);
+
+            // fetch credits
+            const creditsResponse = await this.providerService.getAllProvidersCredits();
+
+            this.logger.log(`Successfully retrieved credits`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "credits fetched successfully",
+                data: {
+                    credits: creditsResponse
+                }
+            });
+        } catch (err) {
+            this.logger.error(`Failed to retreive credits`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to fetch credits",
             });
         }
     }
@@ -303,7 +341,7 @@ export class AdminController {
                 creditsDto.credits, 
                 consumerWallet.walletId, 
                 adminWallet.walletId, 
-                TransactionType.ADD_CREDITS,
+                TransactionType.REDUCE_CREDITS,
                 "Credits reduced by the admin"
             );
             
@@ -324,5 +362,65 @@ export class AdminController {
                 message: errorMessage || "Failed to reduce credits",
             });
         } 
+    }
+
+    @ApiOperation({ summary: 'Transfer settlement credits and record transaction' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'credits transferred successfully', type: Transaction })
+    @Post("/:adminId/providers/:providerId/settle-credits")
+    // Transfer credits from provider wallet to admin wallet 
+    async settleProviderWallet(
+        @Param("adminId", ParseUUIDPipe) adminId: string,
+        @Param("providerId", ParseUUIDPipe) providerId: string,
+        @Res() res
+    ) {
+        try {
+            this.logger.log(`Validating admin`);
+
+            // check admin
+            const adminWallet = await this.adminService.getAdminWallet(adminId);
+
+            this.logger.log(`Getting provider wallet`);
+
+            // fetch wallet
+            const providerWallet = await this.providerService.getProviderWallet(providerId);
+
+            this.logger.log(`Updating admin wallet`);
+
+            // update admin wallet
+            await this.adminService.addCreditsToAdmin(adminId, providerWallet.credits);
+
+            this.logger.log(`Updating provider wallet`);
+
+            // update provider wallet
+            await this.providerService.reduceProviderCredits(providerId, providerWallet.credits);
+
+            this.logger.log(`Creating transaction`);
+
+            // create transaction
+            const transaction = 
+                await this.transactionService.createTransaction(
+                    providerWallet.credits, 
+                    providerWallet.walletId, 
+                    adminWallet.walletId, 
+                    TransactionType.SETTLEMENT,
+                );
+
+            this.logger.log(`Successfully settled credits`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "credits transferred successfully",
+                data: {
+                    transaction
+                }
+            })
+        } catch (err) {
+            this.logger.error(`Failed to settle the credits`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to settle the credits",
+            });
+        }
     }
 }

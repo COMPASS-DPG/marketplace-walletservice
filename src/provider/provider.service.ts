@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { WalletType, wallets } from '@prisma/client';
+import { ProviderCreditsDto } from 'src/dto/credits.dto';
 import { WalletService } from 'src/wallet/wallet.service';
 
 @Injectable()
@@ -20,6 +21,17 @@ export class ProviderService {
             throw new BadRequestException("Wallet does not belong to provider");
         }
         return providerWallet;
+    }
+
+    async getAllProvidersCredits(): Promise<ProviderCreditsDto[]> {
+        const creditsResponse = await this.walletService.getCreditsFromWallets(WalletType.PROVIDER);
+
+        return creditsResponse.map((c) => {
+            return {
+                providerId: c.userId,
+                credits: c.credits
+            }
+        });
     }
 
     async addCreditsToProvider(providerId: string, credits: number, providerWallet: wallets) {

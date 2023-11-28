@@ -16,6 +16,12 @@ export class CreditsDto {
     credits: number;
 }
 
+export class ProviderCreditsDto {
+
+    readonly providerId: string;
+    readonly credits: number;
+}
+
 export class PurchaseDto {
 
     // provider ID
@@ -43,7 +49,7 @@ export class SettlementDto {
     @ApiProperty()
     @IsNotEmpty()
     @IsUUID()
-    adminId: string;
+    providerId: string;
 
     // Number of credits transferred
     @ApiProperty()

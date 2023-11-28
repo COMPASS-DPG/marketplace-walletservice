@@ -3,9 +3,7 @@ import { TransactionService } from 'src/transactions/transactions.service';
 import { ProviderService } from './provider.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Transaction } from 'src/transactions/dto/transactions.dto';
-import { SettlementDto } from 'src/dto/credits.dto';
 import { AdminService } from 'src/admin/admin.service';
-import { TransactionType } from '@prisma/client';
 import { WalletCredits } from 'src/wallet/dto/wallet.dto';
 import { getPrismaErrorStatusAndMessage } from 'src/utils/utils';
 
@@ -88,55 +86,4 @@ export class ProviderController {
         }
     }
 
-    @ApiOperation({ summary: 'Transfer settlement credits and record transaction' })
-    @ApiResponse({ status: HttpStatus.OK, description: 'credits transferred successfully', type: Transaction })
-    @Post("/:providerId/settlement-transaction")
-    // Transfer credits from provider wallet to admin wallet 
-    async settleProviderWallet(
-        @Param("providerId", ParseUUIDPipe) providerId: string,
-        @Body() settlementDto: SettlementDto,
-        @Res() res
-    ) {
-        try {
-            this.logger.log(`Updating provider wallet`);
-
-            // update provider wallet
-            const providerWalletPromise = this.providerService.reduceProviderCredits(providerId, settlementDto.credits);
-
-            this.logger.log(`Updating admin wallet`);
-
-            // update admin wallet
-            const adminWalletPromise = this.adminService.addCreditsToAdmin(settlementDto.adminId, settlementDto.credits);
-
-            const [providerWallet, adminWallet] = await Promise.all([providerWalletPromise, adminWalletPromise]);
-
-            this.logger.log(`Creating transaction`);
-
-            // create transaction
-            const transaction = 
-                await this.transactionService.createTransaction(
-                    settlementDto.credits, 
-                    providerWallet.walletId, 
-                    adminWallet.walletId, 
-                    TransactionType.SETTLEMENT
-                );
-
-            this.logger.log(`Successfully settled credits`);
-
-            return res.status(HttpStatus.OK).json({
-                message: "credits transferred successfully",
-                data: {
-                    transaction
-                }
-            })
-        } catch (err) {
-            this.logger.error(`Failed to settle the credits`);
-
-            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
-            res.status(statusCode).json({
-                statusCode, 
-                message: errorMessage || "Failed to settle the credits",
-            });
-        }
-    }
 }
