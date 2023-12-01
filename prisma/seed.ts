@@ -21,7 +21,7 @@ async function main() {
   const wallet3 = await prisma.wallets.create({
     data: {
       userId: "123e4567-e89b-42d3-a456-556642440002",
-      type: WalletType.PROVIDER,
+      type: WalletType.CONSUMER,
       credits: 100
     }
   });
@@ -29,7 +29,7 @@ async function main() {
   const wallet4 = await prisma.wallets.create({
     data: {
       userId: "123e4567-e89b-42d3-a456-556642440003",
-      type: WalletType.ADMIN,
+      type: WalletType.CONSUMER,
       credits: 300,
     },
   });
@@ -66,10 +66,18 @@ async function main() {
     },
   });
 
+  const wallet9 = await prisma.wallets.create({
+    data: {
+      userId: "123e4567-e89b-42d3-a456-556642440020",
+      type: WalletType.ADMIN,
+      credits: 300,
+    },
+  });
+
   const transaction1 = await prisma.transactions.create({
     data: {
       credits: 100,
-      fromId: 4, 
+      fromId: 9, 
       toId: 1,
       type: TransactionType.ADD_CREDITS,
       description: "Credits added by the admin"
@@ -78,9 +86,9 @@ async function main() {
 
   const transaction2 = await prisma.transactions.create({
     data: {
-      credits: 200,
+      credits: 20,
       fromId: 1,
-      toId: 3,
+      toId: 5,
       type: TransactionType.PURCHASE,
       description: "Purchased course ABC"
     }
@@ -89,14 +97,24 @@ async function main() {
   const transaction3 = await prisma.transactions.create({
     data: {
       credits: 200,
-      fromId: 3,
-      toId: 4,
+      fromId: 1,
+      toId: 5,
+      type: TransactionType.PURCHASE,
+      description: "Purchased course XYZ"
+    }
+  });
+
+  const transaction4 = await prisma.transactions.create({
+    data: {
+      credits: 200,
+      fromId: 5,
+      toId: 9,
       type: TransactionType.SETTLEMENT,
       description: "Credit balance settled"
     }
   })
   console.log({ wallet1, wallet2, wallet3, wallet4, wallet5, wallet6, wallet7, wallet8, 
-    transaction1, transaction2, transaction3 });
+    transaction1, transaction2, transaction3, transaction4 });
 }
 main()
   .then(async () => {
