@@ -127,7 +127,13 @@ export class ConsumerController {
             this.logger.log(`Creating transaction`);
 
             // create transaction
-            const transaction = await this.transactionService.createTransaction(purchaseDto.credits, consumerWallet.walletId, providerWallet.walletId, TransactionType.PURCHASE);
+            const transaction = await this.transactionService.createTransaction(
+                purchaseDto.credits, 
+                consumerWallet.walletId, 
+                providerWallet.walletId, 
+                TransactionType.PURCHASE, 
+                purchaseDto.description
+            );
 
             this.logger.log(`Successfully handled purchase`);
 
@@ -144,6 +150,68 @@ export class ConsumerController {
             res.status(statusCode).json({
                 statusCode, 
                 message: errorMessage || "Failed to handle purchase",
+            });
+        }
+    }
+
+    @ApiOperation({ summary: 'Refund failed Purchase' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'refund successful', type: Transaction })
+    @Post("/:consumerId/refund")
+    // transfer credits from consumer's wallet to provider wallet for purchase
+    async refundPurchase(
+        @Param("consumerId", ParseUUIDPipe) consumerId: string,
+        @Body() purchaseDto: PurchaseDto,
+        @Res() res
+    ) {        
+        try {
+            this.logger.log(`Getting consumer wallet`);
+
+            // fetch consumer wallet
+            let consumerWallet = await this.consumerService.getConsumerWallet(consumerId);
+
+            this.logger.log(`Validating provider`);
+
+            // check provider
+            let providerWallet = await this.providerService.getProviderWallet(purchaseDto.providerId)
+
+            this.logger.log(`Updating consumer wallet`);
+
+            // update consumer wallet
+            const consumerWalletPromise = this.consumerService.addCreditsToConsumer(consumerId, purchaseDto.credits, consumerWallet);
+
+            this.logger.log(`Updating provider wallet`);
+
+            // update provider wallet
+            const providerWalletPromise = this.providerService.reduceProviderCredits(purchaseDto.providerId, purchaseDto.credits, providerWallet);
+
+            [consumerWallet, providerWallet] = await Promise.all([consumerWalletPromise, providerWalletPromise]);
+
+            this.logger.log(`Creating transaction`);
+
+            // create transaction
+            const transaction = await this.transactionService.createTransaction(
+                purchaseDto.credits, 
+                providerWallet.walletId, 
+                consumerWallet.walletId, 
+                TransactionType.REFUND, 
+                purchaseDto.description
+            );
+
+            this.logger.log(`Successfully refunded purchase`);
+
+            return res.status(HttpStatus.OK).json({
+                message: "refund successful",
+                data: {
+                    transaction
+                }
+            });
+        } catch (err) {
+            this.logger.error(`Failed to refund purchase`);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to refund purchase",
             });
         }
     }

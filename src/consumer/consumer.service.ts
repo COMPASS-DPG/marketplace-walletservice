@@ -48,10 +48,11 @@ export class ConsumerService {
         return consumerWallet;
     }
 
-    async addCreditsToConsumer(consumerId: string, credits: number) {
+    async addCreditsToConsumer(consumerId: string, credits: number, consumerWallet?: wallets) {
 
-        // fetch consumer wallet
-        let consumerWallet = await this.getConsumerWallet(consumerId);
+        // fetch consumer wallet if not passed
+        if(!consumerWallet)
+            consumerWallet = await this.getConsumerWallet(consumerId);
 
         // update consumer wallet
         consumerWallet = await this.walletService.updateWalletCredits(consumerId, consumerWallet.credits + credits);

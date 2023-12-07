@@ -27,6 +27,7 @@ enum TransactionType {
   ADD_CREDITS
   REDUCE_CREDITS
   SETTLEMENT
+  REFUND
 }
 
 

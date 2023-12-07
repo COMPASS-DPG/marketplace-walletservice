@@ -41,10 +41,11 @@ export class ProviderService {
         return providerWallet;
     }
 
-    async reduceProviderCredits(consumerId: string, credits: number) {
+    async reduceProviderCredits(consumerId: string, credits: number, providerWallet?: wallets) {
 
         // fetch wallet
-        let providerWallet = await this.getProviderWallet(consumerId);
+        if(!providerWallet)
+            providerWallet = await this.getProviderWallet(consumerId);
 
         // check credits
         if(providerWallet.credits < credits) {
