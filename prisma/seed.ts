@@ -4,7 +4,7 @@ async function main() {
 
   const wallet1 = await prisma.wallets.create({
     data: {
-      userId: "123e4567-e89b-42d3-a456-556642440000",
+      userId: "4d45a9e9-4a4d-4c92-aaea-7b5abbd6ff98",
       type: WalletType.CONSUMER,
       credits: 125,
     },
@@ -12,7 +12,7 @@ async function main() {
 
   const wallet2 = await prisma.wallets.create({
     data: {
-      userId: "123e4567-e89b-42d3-a456-556642440001",
+      userId: "abaa7220-5d2e-4e05-842a-95b2c4ce1876",
       type: WalletType.CONSUMER,
       credits: 200
     },
@@ -20,7 +20,7 @@ async function main() {
 
   const wallet3 = await prisma.wallets.create({
     data: {
-      userId: "123e4567-e89b-42d3-a456-556642440002",
+      userId: "0f5d0b13-8d72-46c9-a7c4-c1f7e5aa1f17",
       type: WalletType.CONSUMER,
       credits: 100
     }
@@ -28,7 +28,7 @@ async function main() {
 
   const wallet4 = await prisma.wallets.create({
     data: {
-      userId: "123e4567-e89b-42d3-a456-556642440003",
+      userId: "bbf1f7cf-4216-458e-8d98-0d9204ae57ef",
       type: WalletType.CONSUMER,
       credits: 300,
     },
