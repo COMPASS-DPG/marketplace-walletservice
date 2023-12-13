@@ -1,34 +1,15 @@
 version: '3.8'
 services:
-  db:
-    image: postgres:13.5
-    container_name: postgres
-    restart: always
-    environment:
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - postgres:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
-    networks:
-      - nestjs
-  app:
+  wallet:
     build: 
       context: .
       dockerfile: Dockerfile
     container_name: marketplace-walletservice
-    environment:
-      - PORT=${PORT}
     ports:
-      - '${PORT}:4000'
-    depends_on:
-      - db
-    volumes:
-      - ./src:/app/src
-    
-volumes:
-  postgres:
+      - 4022:4022
+    networks:
+      - compass_samagra
+
 networks:
-  nestjs:
+  compass_samagra:
+    external: true
