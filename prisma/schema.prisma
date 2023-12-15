@@ -11,22 +11,31 @@ datasource db {
 }
 
 enum WalletType {
-  admin
-  provider
-  user
+  ADMIN
+  PROVIDER
+  CONSUMER
 }
 
 enum WalletStatus {
-  active
-  inactive
-  frozen
+  ACTIVE
+  INACTIVE
+  FROZEN
 }
+
+enum TransactionType {
+  PURCHASE
+  ADD_CREDITS
+  REDUCE_CREDITS
+  SETTLEMENT
+  REFUND
+}
+
 
 model wallets {
   walletId   Int  @id @default(autoincrement())
-  userId     Int    
+  userId     String    @unique
   type       WalletType
-  status     WalletStatus
+  status     WalletStatus @default(ACTIVE)
   credits    Int
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -39,7 +48,8 @@ model transactions {
   fromId          Int  
   toId            Int
   credits         Int
-  description     String
+  type            TransactionType
+  description     String?
   createdAt       DateTime  @default(now())
   from            wallets @relation("FromTransaction", fields:[fromId], references:[walletId])
   to              wallets @relation("ToTransaction", fields:[toId], references:[walletId])
