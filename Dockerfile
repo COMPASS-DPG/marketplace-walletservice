@@ -17,7 +17,7 @@ COPY package*.json ./
 # Copy the Prisma configuration and migration files
 # This line copies the "prisma" directory from your project's root into the Docker container's working directory.
 COPY prisma ./prisma/
-COPY env-example ./.env
+COPY env-sample ./.env
 # Install project dependencies
 RUN npm install
 
@@ -27,9 +27,8 @@ COPY . .
 # Build your Nest.js application
 RUN npm run build
 
-# Expose the PORT environment variable (default to 4000 if not provided)
-ARG PORT=4000
-ENV PORT=$PORT
+# Expose the PORT environment variable (default to 4022 if not provided)\\
+ENV PORT=4022
 EXPOSE $PORT
 
 # Start the Nest.js application using the start:prod script

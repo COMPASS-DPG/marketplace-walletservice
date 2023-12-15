@@ -4,12 +4,12 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-    container_name: marketplace-walletservice
+    container_name: wallet-service
     ports:
       - 4022:4022
     networks:
-      - compass_samagra
+      - samagra_compass
 
 networks:
-  compass_samagra:
+  samagra_compass:
     external: true
