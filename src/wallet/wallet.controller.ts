@@ -36,7 +36,7 @@ export class WalletController {
                 }
             })
         } catch (err) {
-            this.logger.error(`Failed to create wallet`);
+            this.logger.error(`Failed to create wallet: `,err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({

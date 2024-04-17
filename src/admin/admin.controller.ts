@@ -134,7 +134,7 @@ export class AdminController {
                 }
             });
         } catch (err) {
-            this.logger.error(`Failed to retreive the transactions`);
+            this.logger.error(`Failed to retreive the transactions: `, err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({
@@ -172,7 +172,7 @@ export class AdminController {
                 }
             });
         } catch (err) {
-            this.logger.error(`Failed to retreive credits`);
+            this.logger.error(`Failed to retreive credits: `,err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({
@@ -210,7 +210,7 @@ export class AdminController {
                 }
             });
         } catch (err) {
-            this.logger.error(`Failed to retreive the transactions`);
+            this.logger.error(`Failed to retreive the transactions: `,err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({
@@ -254,7 +254,7 @@ export class AdminController {
                 }
             });
         } catch (err) {
-            this.logger.error(`Failed to retreive the transactions`);
+            this.logger.error(`Failed to retreive the transactions: `,err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({
@@ -304,7 +304,7 @@ export class AdminController {
                 }
             });
         } catch (err) {
-            this.logger.error(`Failed to add credits`);
+            this.logger.error(`Failed to add credits: `,err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({
@@ -354,7 +354,7 @@ export class AdminController {
                 }
             })
         } catch (err) {
-            this.logger.error(`Failed to reduce credits`);
+            this.logger.error(`Failed to reduce credits: `,err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({
@@ -414,7 +414,7 @@ export class AdminController {
                 }
             })
         } catch (err) {
-            this.logger.error(`Failed to settle the credits`);
+            this.logger.error(`Failed to settle the credits: `,err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({

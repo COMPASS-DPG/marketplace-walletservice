@@ -12,7 +12,7 @@ async function main() {
 
   const wallet2 = await prisma.wallets.create({
     data: {
-      userId: "abaa7220-5d2e-4e05-842a-95b2c4ce1876",
+      userId: "890f2839-866f-4524-9eac-bebe0d35d607",
       type: WalletType.CONSUMER,
       credits: 200
     },

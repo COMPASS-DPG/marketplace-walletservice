@@ -44,7 +44,7 @@ export class ConsumerController {
                 }
             });
         } catch (err) {
-            this.logger.error(`Failed to retreive the credits`);
+            this.logger.error(`Failed to retreive the credits: `,err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({
@@ -82,7 +82,7 @@ export class ConsumerController {
                 }
             });
         } catch (err) {
-            this.logger.error(`Failed to retreive the transactions`);
+            this.logger.error(`Failed to retreive the transactions: `,err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({
@@ -144,7 +144,7 @@ export class ConsumerController {
                 }
             });
         } catch (err) {
-            this.logger.error(`Failed to handle purchase`);
+            this.logger.error(`Failed to handle purchase: `,err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({
@@ -206,7 +206,7 @@ export class ConsumerController {
                 }
             });
         } catch (err) {
-            this.logger.error(`Failed to refund purchase`);
+            this.logger.error(`Failed to refund purchase: `,err.message);
 
             const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
             res.status(statusCode).json({
