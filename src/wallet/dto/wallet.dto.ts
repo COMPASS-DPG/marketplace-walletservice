@@ -29,6 +29,12 @@ export class CreateWalletDto {
     credits: number;
 }
 
+export class DeleteWalletDto {
+    @ApiProperty()
+    @IsUUID()
+    userId: string;
+}
+
 export class CreateWalletResponse extends CreateWalletDto {
 
     readonly walletId: number;

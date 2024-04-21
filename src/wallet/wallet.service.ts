@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateWalletDto, CreateWalletResponse } from './dto/wallet.dto';
+import { CreateWalletDto, CreateWalletResponse, DeleteWalletDto } from './dto/wallet.dto';
 import { WalletType } from '@prisma/client';
 
 @Injectable()
@@ -46,5 +46,23 @@ export class WalletService {
         return this.prisma.wallets.create({
             data: createWalletDto
         });
+    }
+
+    async deleteWallet(deleteWalletDto: DeleteWalletDto) {
+        const wallet = await this.prisma.wallets.findFirst({
+            where: {
+                userId: deleteWalletDto.userId
+            }
+        })
+        if(!wallet) {
+            return;
+        }
+        await this.prisma.wallets.delete({
+            where: {
+                userId: deleteWalletDto.userId
+            }
+        })
+
+        return;
     }
 }

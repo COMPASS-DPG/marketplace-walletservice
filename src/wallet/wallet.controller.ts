@@ -1,7 +1,7 @@
 import { Body, Controller, HttpStatus, Logger, Post, Res } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { WalletService } from "./wallet.service";
-import { CreateWalletDto, CreateWalletResponse } from "./dto/wallet.dto";
+import { CreateWalletDto, CreateWalletResponse, DeleteWalletDto } from "./dto/wallet.dto";
 import { getPrismaErrorStatusAndMessage } from "src/utils/utils";
 
 @ApiTags('wallet')
@@ -42,6 +42,38 @@ export class WalletController {
             res.status(statusCode).json({
                 statusCode, 
                 message: errorMessage || "Failed to create wallet",
+            });
+        }
+    }
+
+    @ApiOperation({ summary: 'Delete a Wallet' })
+    @ApiResponse({ status: HttpStatus.CREATED, description: 'Wallet created successfully', type: CreateWalletResponse })
+    @Post("/delete")
+    async deleteWallet(
+        @Body() deleteWalletDto: DeleteWalletDto,
+        @Res() res
+    ) {
+        try {
+            this.logger.log(`Deleting wallet`);
+
+            // fetch wallet
+            const wallet = await this.walletService.deleteWallet(deleteWalletDto);
+
+            this.logger.log(`Successfully deleted wallet`);
+
+            return res.status(HttpStatus.CREATED).json({
+                message: "wallet deleted successfully",
+                data: {
+                    wallet
+                }
+            })
+        } catch (err) {
+            this.logger.error(`Failed to delete wallet: `,err.message);
+
+            const {errorMessage, statusCode} = getPrismaErrorStatusAndMessage(err);
+            res.status(statusCode).json({
+                statusCode, 
+                message: errorMessage || "Failed to delete wallet",
             });
         }
     }
