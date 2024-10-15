@@ -1,15 +1,18 @@
 -- CreateEnum
-CREATE TYPE "WalletType" AS ENUM ('admin', 'provider', 'user');
+CREATE TYPE "WalletType" AS ENUM ('ADMIN', 'PROVIDER', 'CONSUMER');
 
 -- CreateEnum
-CREATE TYPE "WalletStatus" AS ENUM ('active', 'inactive', 'frozen');
+CREATE TYPE "WalletStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'FROZEN');
+
+-- CreateEnum
+CREATE TYPE "TransactionType" AS ENUM ('PURCHASE', 'ADD_CREDITS', 'REDUCE_CREDITS', 'SETTLEMENT', 'REFUND');
 
 -- CreateTable
 CREATE TABLE "wallets" (
     "walletId" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "type" "WalletType" NOT NULL,
-    "status" "WalletStatus" NOT NULL,
+    "status" "WalletStatus" NOT NULL DEFAULT 'ACTIVE',
     "credits" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -23,11 +26,15 @@ CREATE TABLE "transactions" (
     "fromId" INTEGER NOT NULL,
     "toId" INTEGER NOT NULL,
     "credits" INTEGER NOT NULL,
-    "description" TEXT NOT NULL,
+    "type" "TransactionType" NOT NULL,
+    "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "transactions_pkey" PRIMARY KEY ("transactionId")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "wallets_userId_key" ON "wallets"("userId");
 
 -- AddForeignKey
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_fromId_fkey" FOREIGN KEY ("fromId") REFERENCES "wallets"("walletId") ON DELETE RESTRICT ON UPDATE CASCADE;

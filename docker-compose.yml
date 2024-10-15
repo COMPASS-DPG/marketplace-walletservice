@@ -1,16 +1,15 @@
 version: '3.8'
 services:
-
-  postgres:
-    image: postgres:13.5
-    restart: always
-    environment:
-      - POSTGRES_USER=username
-      - POSTGRES_PASSWORD=password
-    volumes:
-      - postgres:/var/lib/postgresql/data
+  wallet:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: wallet-service
     ports:
-      - '5434:5432'
+      - 4022:4022
+    networks:
+      - samagra_compass
 
-volumes:
-  postgres:
+networks:
+  samagra_compass:
+    external: true
